@@ -33,7 +33,7 @@ def prep_network(time_horizon_in_hours,date_debut,demand_multiplier,climatic_dat
     #ajout_generation():
     #Lecture du fichier des capacitées estimées
 
-    eraa_capa = pd.read_csv(r"C:\Users\noego\calcul BESS\data\ERAA_National_Estimates_capacities_"+str(capa_data_year)+"_france.csv", sep=';')
+    eraa_capa = pd.read_csv("./data/ERAA_National_Estimates_capacities_"+str(capa_data_year)+"_france.csv", sep=';')
     eraa_storage = eraa_capa[eraa_capa["energy_capacity (MWh)"].notna()]
     eraa_gen = eraa_capa[eraa_capa["energy_capacity (MWh)"].isnull()]
     eraa_gen = eraa_gen[eraa_gen["power_capacity (MW)"] > 0]
@@ -359,6 +359,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
