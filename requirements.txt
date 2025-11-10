@@ -119,7 +119,6 @@ pyreadline3==3.5.4
 python-dateutil==2.9.0.post0
 python-utils==3.9.1
 pytz==2025.2
-pywin32==311
 PyYAML==6.0.3
 pyzmq==27.1.0
 rasterio==1.4.3
