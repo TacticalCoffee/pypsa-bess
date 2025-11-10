@@ -99,7 +99,7 @@ if st.button("🚀 Lancer la simulation"):
         )
 
         st.success("Réseau prêt. Optimisation en cours...")
-        result = network.optimize(solver_name="cbc", assign_all_duals=True)
+        result = network.optimize(solver_name="highs")
         st.success("Optimisation terminée !")
         
         # --- Affichage des résultats ---
@@ -131,5 +131,6 @@ else:
 #lancer streamlit : dans cmd !
 # conda activate bess
 # streamlit run app.py
+
 
 # bugs à régler : ne fonctionne pas quand on change l'année du scénario ...
