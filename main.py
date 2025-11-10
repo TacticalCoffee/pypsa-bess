@@ -171,7 +171,7 @@ def plot_energybalance(network):
 
 
 def plot_scenarios(annee):
-    eraa_capa = pd.read_csv(r"C:\Users\noego\calcul BESS\data\ERAA_National_Estimates_capacities_"+str(annee)+"_france.csv", sep=';')
+    eraa_capa = pd.read_csv("./data/ERAA_National_Estimates_capacities_"+str(annee)+"_france.csv", sep=';')
     eraa_gen = eraa_capa[eraa_capa["energy_capacity (MWh)"].isnull()]
     eraa_gen = eraa_gen[eraa_gen["power_capacity (MW)"] > 0]
     plt.bar(eraa_gen['name'], eraa_gen['power_capacity (MW)'])
@@ -182,7 +182,7 @@ def plot_scenarios(annee):
     plt.show()
     
 def return_scenario(annee):
-    eraa_capa = pd.read_csv(r"C:\Users\noego\calcul BESS\data\ERAA_National_Estimates_capacities_"+str(annee)+"_france.csv", sep=';')
+    eraa_capa = pd.read_csv("./data/ERAA_National_Estimates_capacities_"+str(annee)+"_france.csv", sep=';')
     eraa_gen = eraa_capa[eraa_capa["energy_capacity (MWh)"].isnull()]
     eraa_gen = eraa_gen[eraa_gen["power_capacity (MW)"] > 0].drop('energy_capacity (MWh)',axis=1)
     return eraa_gen  
@@ -359,6 +359,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
