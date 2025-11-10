@@ -188,10 +188,15 @@ def return_scenario(annee):
     return eraa_gen  
 
 def plot_evolstorage(network):
-    SOC = network.storage_units_t.state_of_charge
-    SOC['Hydro - pompage'] = SOC['Hydro - pompage']/network.storage_units.max_hours["Hydro - pompage"] * network.storage_units.p_nom["Hydro - pompage"]
-    SOC['Batteries']= SOC['Batteries']/network.storage_units.max_hours["Batteries"] * network.storage_units.p_nom["Batteries"]
-    fig, ax = plt.subplots(figsize=(30,10), facecolor="#F0F0F0") 
+    SOC = network.storage_units_t.state_of_charge.copy() 
+    max_e_hydro = network.storage_units.p_nom["Hydro - pompage"] * network.storage_units.max_hours["Hydro - pompage"]
+    max_e_bat = network.storage_units.p_nom["Batteries"] * network.storage_units.max_hours["Batteries"]
+    if max_e_hydro > 0:
+        SOC['Hydro - pompage'] = (SOC['Hydro - pompage'] / max_e_hydro) * 100
+    if max_e_bat > 0:
+        SOC['Batteries'] = (SOC['Batteries'] / max_e_bat) * 100
+        
+    fig, ax = plt.subplots(figsize=(15,10), facecolor="#F0F0F0") 
     ax.plot(SOC.index, SOC.values,label=SOC.columns)
     ax.set_xlabel("Temps")
     ax.set_ylabel("State of charge (%)")
@@ -359,6 +364,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
