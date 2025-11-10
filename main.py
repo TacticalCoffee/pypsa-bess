@@ -196,7 +196,7 @@ def plot_evolstorage(network):
     if max_e_bat > 0:
         SOC['Batteries'] = (SOC['Batteries'] / max_e_bat) * 100
         
-    fig, ax = plt.subplots(figsize=(15,10), facecolor="#F0F0F0") 
+    fig, ax = plt.subplots(figsize=(30,10), facecolor="#F0F0F0") 
     ax.plot(SOC.index, SOC.values,label=SOC.columns)
     ax.set_xlabel("Temps")
     ax.set_ylabel("State of charge (%)")
@@ -364,6 +364,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
