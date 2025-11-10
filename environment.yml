@@ -8,6 +8,7 @@ dependencies:
   - bzip2=1.0.8=h0ad9c76_8
   - ca-certificates=2025.10.5=h4c7d964_0
   - cloudpickle=3.1.1=pyhd8ed1ab_0
+  - coincbc
   - coin-or-cbc=2.10.12=hd3ed8bd_4
   - coin-or-cgl=0.60.9=hacf86d0_6
   - coin-or-clp=1.17.10=h626fd10_3
@@ -22,8 +23,6 @@ dependencies:
   - executing=2.2.1=pyhd8ed1ab_0
   - icu=75.1=he0c23c2_0
   - importlib-metadata=8.7.0=pyhe01879c_1
-  - ipykernel=6.30.1=pyh3521513_0
-  - ipython=8.37.0=pyha7b4d00_0
   - jedi=0.19.2=pyhd8ed1ab_1
   - jupyter_client=8.6.3=pyhd8ed1ab_1
   - jupyter_core=5.8.1=pyh5737063_0
@@ -39,7 +38,6 @@ dependencies:
   - libmpdec=4.0.0=h2466b09_0
   - libsodium=1.0.20=hc70643c_0
   - libsqlite=3.50.4=hf5d6505_0
-  - libwinpthread=12.0.0.r4.gg4f2fc60ca=h57928b3_10
   - libxml2=2.15.0=ha29bfb0_1
   - libxml2-16=2.15.0=h06f855e_1
   - libzlib=1.3.1=h2466b09_2
@@ -64,17 +62,12 @@ dependencies:
   - pywin32=311=py313h40c08fc_1
   - pyzmq=27.1.0=py312hbb5da91_0
   - six=1.17.0=pyhe01879c_1
-  - spyder-kernels=3.0.5=win_pyh7428d3b_0
   - stack_data=0.6.3=pyhd8ed1ab_1
   - tbb=2021.13.0=h18a62a1_3
   - tk=8.6.13=h2c6b04d_2
   - tornado=6.5.2=py313h5ea7bf4_1
   - traitlets=5.14.3=pyhd8ed1ab_1
   - typing_extensions=4.15.0=pyhcf101f3_0
-  - ucrt=10.0.26100.0=h57928b3_0
-  - vc=14.3=h41ae7f8_31
-  - vc14_runtime=14.44.35208=h818238b_31
-  - vcomp14=14.44.35208=h818238b_31
   - wcwidth=0.2.14=pyhd8ed1ab_0
   - zeromq=4.3.5=h5bddc39_9
   - zipp=3.23.0=pyhd8ed1ab_0
@@ -211,3 +204,4 @@ dependencies:
       - xlrd==2.0.2
       - yte==1.9.0
 prefix: C:\Users\noego\AppData\Local\spyder-6\envs\bess
+
