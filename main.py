@@ -113,6 +113,21 @@ def prep_network(time_horizon_in_hours,date_debut,demand_multiplier,climatic_dat
 
 
 def plot_results(network):
+    COLOR_MAP = {
+    "Gas ": "black",
+    "Hydro - Run of River (Turbine)": "royalblue",
+    "Nuclear": "orange",
+    "Oil": "black",
+    "Others renewable" : "forestgreen",
+    "Solar (Photovoltaic)" : "gold",
+    "Wind Offshore": "skyblue",
+    "Wind Onshore": "navy",
+    "Stockage-bat (décharge)" : "crimson",
+    'Stockage-bat (charge)':'crimson',
+    "Stockage-hydro (décharge)": "mediumorchid",
+    "Stockage-hydro (charge)": "mediumorchid"
+    }
+    
     gen_prod = network.generators_t.p
     gen_carrier = network.generators.carrier
     prod_by_gen = gen_prod.groupby(gen_carrier, axis=1).sum()
@@ -137,8 +152,12 @@ def plot_results(network):
         all_neg = pd.concat([all_neg, pd.DataFrame({f"{col} (charge)":neg.values},index=prod_by_gen.index)], axis=1)
 
 
-    colors_prod = plt.cm.tab20.colors[:len(all_prod.columns)]
-    colors_neg = plt.cm.tab20.colors[len(all_prod.columns):len(all_prod.columns)+len(all_neg.columns)]
+    # colors_prod = plt.cm.tab20.colors[:len(all_prod.columns)]
+    # colors_neg = plt.cm.tab20.colors[len(all_prod.columns):len(all_prod.columns)+len(all_neg.columns)]
+    colors_prod = [COLOR_MAP.get(col, "grey") for col in all_prod.columns]
+    colors_neg  = [COLOR_MAP.get(col, "lightgrey") for col in all_neg.columns]
+
+
 
     fig, ax = plt.subplots(figsize=(30,10), facecolor="#F0F0F0")    
     ax.stackplot(all_neg.index, all_neg.T.values, labels=all_neg.columns, alpha=0.7,colors=colors_neg)
@@ -286,8 +305,8 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                energy_density_per_ton=22394,
                                cost_per_ton=150000.84,
                                efficiency=0.37,
-                               ramp_limit_up=300,
-                               ramp_limit_down=300,
+                               ramp_limit_up=0.01,
+                               ramp_limit_down=0.01,
                                marginal_cost=50),
         "Oil": FuelSources(name="Oil",
                                co2_emissions=901e-3,
@@ -364,6 +383,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
