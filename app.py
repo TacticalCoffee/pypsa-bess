@@ -99,7 +99,7 @@ if st.button("🚀 Lancer la simulation"):
         )
 
         st.success("Réseau prêt. Optimisation en cours...")
-        result = network.optimize(solver_name="glpk")
+        result = network.optimize(solver_name="cbc")
         st.success("Optimisation terminée !")
         
         # --- Affichage des résultats ---
@@ -134,6 +134,7 @@ else:
 
 
 # bugs à régler : ne fonctionne pas quand on change l'année du scénario ...
+
 
 
 
