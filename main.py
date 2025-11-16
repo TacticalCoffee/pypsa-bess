@@ -241,7 +241,14 @@ def plot_co2overtime(network):
     # retourne émissions totales en tonnes de co2
     return co2_overtime.sum()
 
-
+def plot_marginal_prices(network):
+    prices = network.buses_t.marginal_price
+    fig, ax = plt.subplots(figsize=(30,10), facecolor="#F0F0F0") 
+    ax.plot(prices.index, prices.values)
+    ax.set_xlabel("Temps")
+    ax.set_ylabel("Prix (€/MWh)")
+    ax.set_title("Prix marginal de l'électricité")
+    ax.grid(which="major", color="grey", linestyle="--", linewidth=1)
 
 @dataclass
 class FuelSources:
@@ -383,6 +390,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
