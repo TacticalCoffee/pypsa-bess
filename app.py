@@ -10,7 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import datetime
 from datetime import timedelta
-from main import prep_network, plot_results, plot_energybalance, plot_evolstorage, plot_co2overtime, plot_scenarios, return_scenario
+from main import prep_network, plot_results, plot_energybalance, plot_evolstorage, plot_co2overtime, plot_scenarios, return_scenario, plot_marginal_prices
 
 st.set_page_config(page_title="Simulation mix énergétique", layout="wide")
 
@@ -115,10 +115,16 @@ if st.button("🚀 Lancer la simulation"):
             st.subheader("Évolution du stockage")
             plot_evolstorage(network)
             st.pyplot(plt.gcf())
-    
+
+            st.subheader("Prix marginal de l'électricité")
+            plot_marginal_prices(network)
+            st.pyplot(plt.gcf())
+            
             st.subheader("Émissions de CO₂")
             total_co2 = plot_co2overtime(network)
             st.pyplot(plt.gcf())
+
+            
             st.metric(label="Émissions totales de CO₂", value=f"{total_co2:,.0f} tonnes eq.")
         else:
             st.error("Le solveur n'a pas trouvé de solution satisfaisante. Vous pouvez réduire la charge sur le réseau ou ajouter du stockage.", icon="🚨")
@@ -134,6 +140,7 @@ else:
 
 
 # bugs à régler : ne fonctionne pas quand on change l'année du scénario ...
+
 
 
 
