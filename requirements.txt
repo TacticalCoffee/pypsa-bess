@@ -14,9 +14,11 @@ pip==25.2
 plotly==6.3.0
 pyarrow==21.0.0
 pyomo
+glpk
 pypsa==0.35.2
 scipy==1.16.2
 streamlit==1.51.0
 xarray==2025.9.1
 pulp
+
 
