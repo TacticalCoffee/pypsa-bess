@@ -236,17 +236,9 @@ def return_scenario(annee):
 
 def plot_evolstorage_plotly(network):
 
-    SOC = network.storage_units_t.state_of_charge.copy()
-    SOC['Hydro - pompage'] = (
-        SOC['Hydro - pompage']
-        / network.storage_units.max_hours["Hydro - pompage"]
-        * network.storage_units.p_nom["Hydro - pompage"]
-    )
-    SOC['Batteries'] = (
-        SOC['Batteries']
-        / network.storage_units.max_hours["Batteries"]
-        * network.storage_units.p_nom["Batteries"]
-    )
+    SOC = network.storage_units_t.state_of_charge
+    SOC['Hydro - pompage'] = SOC['Hydro - pompage']/network.storage_units.max_hours["Hydro - pompage"] * network.storage_units.p_nom["Hydro - pompage"]
+    SOC['Batteries']= SOC['Batteries']/network.storage_units.max_hours["Batteries"] * network.storage_units.p_nom["Batteries"]
 
     # Figure Plotly
     fig = go.Figure()
@@ -262,7 +254,7 @@ def plot_evolstorage_plotly(network):
     fig.update_layout(
         title="Évolution du taux de charge des stockages",
         xaxis_title="Temps",
-        yaxis_title="State of charge (MW équivalent)",
+        yaxis_title="taux de charge",
         template="simple_white",
         hovermode="x unified",
         legend=dict(orientation="h", y=-0.2),
@@ -453,6 +445,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
