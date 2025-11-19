@@ -10,6 +10,8 @@ import pandas as pd
 from dataclasses import dataclass
 from datetime import timedelta
 import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 pd.set_option('future.no_silent_downcasting', True)
 
 def prep_network(time_horizon_in_hours,date_debut,demand_multiplier,climatic_data_year,clim_year,capa_data_year,p_bat,capa_bat,p_hyd,capa_hyd,charge_initiale_stockage):
@@ -451,6 +453,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
