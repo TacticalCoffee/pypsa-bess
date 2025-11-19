@@ -112,22 +112,24 @@ def prep_network(time_horizon_in_hours,date_debut,demand_multiplier,climatic_dat
 
 
 
-def plot_results(network):
-    COLOR_MAP = {
-    "Gas ": "black",
-    "Hydro - Run of River (Turbine)": "royalblue",
-    "Nuclear": "orange",
-    "Oil": "black",
-    "Others renewable" : "forestgreen",
-    "Solar (Photovoltaic)" : "gold",
-    "Wind Offshore": "skyblue",
-    "Wind Onshore": "navy",
-    "Stockage-bat (décharge)" : "crimson",
-    'Stockage-bat (charge)':'crimson',
-    "Stockage-hydro (décharge)": "mediumorchid",
-    "Stockage-hydro (charge)": "mediumorchid"
-    }
+def plot_results_plotly(network):
     
+    COLOR_MAP = {
+        "Gas ": "black",
+        "Hydro - Run of River (Turbine)": "royalblue",
+        "Nuclear": "orange",
+        "Oil": "black",
+        "Others renewable" : "forestgreen",
+        "Solar (Photovoltaic)" : "gold",
+        "Wind Offshore": "skyblue",
+        "Wind Onshore": "navy",
+        "Stockage-bat (décharge)" : "crimson",
+        "Stockage-bat (charge)"  : "crimson",
+        "Stockage-hydro (décharge)": "mediumorchid",
+        "Stockage-hydro (charge)"  : "mediumorchid"
+    }
+
+    # --- Générateurs ---
     gen_prod = network.generators_t.p
     gen_carrier = network.generators.carrier
     prod_by_gen = gen_prod.groupby(gen_carrier, axis=1).sum()
@@ -137,42 +139,66 @@ def plot_results(network):
     storage_carrier = network.storage_units.carrier
     prod_by_storage = storage_prod.groupby(storage_carrier, axis=1).sum()
 
+    # --- Séparation charge / décharge ---
+    all_prod = prod_by_gen.copy()
+    all_neg  = pd.DataFrame(index=prod_by_gen.index)
 
-    # --- Tracer ---
-
-    all_prod = prod_by_gen
-    all_neg = pd.DataFrame(index=prod_by_gen.index)
-    # Stockage : séparer charge (négatif) et décharge (positif)
     for col in prod_by_storage.columns:
         pos = prod_by_storage[col].clip(lower=0)
         neg = prod_by_storage[col].clip(upper=0)
-        # if pos.sum() > 0:
-        all_prod = pd.concat([all_prod, pd.DataFrame({f"{col} (décharge)":pos.values},index=prod_by_gen.index)], axis=1)
-        # if neg.sum() < 0:
-        all_neg = pd.concat([all_neg, pd.DataFrame({f"{col} (charge)":neg.values},index=prod_by_gen.index)], axis=1)
 
+        all_prod[f"{col} (décharge)"] = pos
+        all_neg[f"{col} (charge)"] = neg
 
-    # colors_prod = plt.cm.tab20.colors[:len(all_prod.columns)]
-    # colors_neg = plt.cm.tab20.colors[len(all_prod.columns):len(all_prod.columns)+len(all_neg.columns)]
-    colors_prod = [COLOR_MAP.get(col, "grey") for col in all_prod.columns]
-    colors_neg  = [COLOR_MAP.get(col, "lightgrey") for col in all_neg.columns]
+    # ---------------------
+    # Construction du graphique Plotly
+    # ---------------------
+    fig = go.Figure()
 
+    # --- Stack négatif (charges) ---
+    for col in all_neg.columns:
+        fig.add_trace(go.Scatter(
+            x=all_neg.index,
+            y=all_neg[col],
+            stackgroup="charge",
+            name=col,
+            mode="lines",
+            line=dict(width=0.5, color=COLOR_MAP.get(col, "lightgrey")),
+            hoverinfo="x+y+name"
+        ))
 
+    # --- Stack positif (production) ---
+    for col in all_prod.columns:
+        fig.add_trace(go.Scatter(
+            x=all_prod.index,
+            y=all_prod[col],
+            stackgroup="prod",
+            name=col,
+            mode="lines",
+            line=dict(width=0.5, color=COLOR_MAP.get(col, "grey")),
+            hoverinfo="x+y+name"
+        ))
 
-    fig, ax = plt.subplots(figsize=(30,10), facecolor="#F0F0F0")    
-    ax.stackplot(all_neg.index, all_neg.T.values, labels=all_neg.columns, alpha=0.7,colors=colors_neg)
-    ax.stackplot(all_prod.index, all_prod.T.values, labels=all_prod.columns, alpha=0.7,colors=colors_prod)
-    
-    # courbe de demande
-    # on adapte la courbe de demande pour qu'elle prenne en compte l'énergie stockée
-    ax.plot(network.loads_t['p_set'].index, network.loads_t['p_set'].sum(axis=1)-all_neg.sum(axis=1), color='black', lw=1, label='Demande')
-    ax.autoscale(enable=False)
-    ax.set_xlabel("Temps")
-    ax.set_ylabel("Puissance (MW)")
-    ax.set_title("Production et charge horaire par source d'énergie")
-    # ax.set_ylim(bottom=min(prod_by_storage.min().min(), 0) * 1.5, top=demand["value"].max()*1.2)
-    ax.grid(which="major", color="grey", linestyle="--", linewidth=0.5)
-    ax.legend(loc="upper right", fontsize=8)
+    # --- Courbe de demande ---
+    demand = network.loads_t['p_set'].sum(axis=1) - all_neg.sum(axis=1)
+    fig.add_trace(go.Scatter(
+        x=demand.index,
+        y=demand,
+        name="Demande",
+        mode="lines",
+        line=dict(color="black", width=1)
+    ))
+
+    fig.update_layout(
+        title="Production et charge horaire par source d'énergie",
+        xaxis_title="Temps",
+        yaxis_title="Puissance (MW)",
+        hovermode="x unified",
+        template="simple_white",
+        legend=dict(orientation="h", y=-0.2)
+    )
+
+    return fig
 
 
 
@@ -206,40 +232,73 @@ def return_scenario(annee):
     eraa_gen = eraa_gen[eraa_gen["power_capacity (MW)"] > 0].drop('energy_capacity (MWh)',axis=1)
     return eraa_gen  
 
-def plot_evolstorage(network):
-    SOC = network.storage_units_t.state_of_charge.copy() 
-    max_e_hydro = network.storage_units.p_nom["Hydro - pompage"] * network.storage_units.max_hours["Hydro - pompage"]
-    max_e_bat = network.storage_units.p_nom["Batteries"] * network.storage_units.max_hours["Batteries"]
-    if max_e_hydro > 0:
-        SOC['Hydro - pompage'] = (SOC['Hydro - pompage'] / max_e_hydro) * 100
-    if max_e_bat > 0:
-        SOC['Batteries'] = (SOC['Batteries'] / max_e_bat) * 100
-        
-    fig, ax = plt.subplots(figsize=(30,10), facecolor="#F0F0F0") 
-    ax.plot(SOC.index, SOC.values,label=SOC.columns)
-    ax.set_xlabel("Temps")
-    ax.set_ylabel("State of charge (%)")
-    ax.set_title("Evolution du taux de charge de la batterie")
-    ax.grid(which="major", color="grey", linestyle="--", linewidth=0.5)
-    ax.legend(loc="upper right", fontsize=8)
+def plot_evolstorage_plotly(network):
 
+    SOC = network.storage_units_t.state_of_charge.copy()
+    SOC['Hydro - pompage'] = (
+        SOC['Hydro - pompage']
+        / network.storage_units.max_hours["Hydro - pompage"]
+        * network.storage_units.p_nom["Hydro - pompage"]
+    )
+    SOC['Batteries'] = (
+        SOC['Batteries']
+        / network.storage_units.max_hours["Batteries"]
+        * network.storage_units.p_nom["Batteries"]
+    )
+
+    # Figure Plotly
+    fig = go.Figure()
+
+    for col in SOC.columns:
+        fig.add_trace(go.Scatter(
+            x=SOC.index,
+            y=SOC[col],
+            mode="lines",
+            name=col
+        ))
+
+    fig.update_layout(
+        title="Évolution du taux de charge des stockages",
+        xaxis_title="Temps",
+        yaxis_title="State of charge (MW équivalent)",
+        template="simple_white",
+        hovermode="x unified",
+        legend=dict(orientation="h", y=-0.2),
+        height=500,
+        width=1200
+    )
+
+    return fig
 
 # Attention, pas de temps de 1h pour que les calculs soient valides
 #Calcul : émission co2 en tonnes/MWh * MWh produits par heure
 # on fait la somme de tout ça
-def plot_co2overtime(network):
+def plot_co2overtime_plotly(network):
+
+    # Calcul des émissions horaires
     co2_list = network.generators.carrier.map(network.carriers.co2_emissions)
-    co2_overtime = (network.generators_t.p*co2_list).sum(axis=1)
-    fig, ax = plt.subplots(figsize=(30,10), facecolor="#F0F0F0") 
-    ax.bar(co2_overtime.index, co2_overtime.values,width=timedelta(hours=1))
-    ax.set_xlabel("Temps")
-    ax.set_ylabel("Tonnes Co2 Eq")
-    ax.set_title("Emissions de C02 (Tonnes Co2 Eq.)")
-    ax.grid(which="major", color="grey", linestyle="--", linewidth=0.5)
-    ax.legend(loc="upper right", fontsize=8)
-    
-    # retourne émissions totales en tonnes de co2
-    return co2_overtime.sum()
+    co2_overtime = (network.generators_t.p * co2_list).sum(axis=1)
+
+    # Construction du bar chart Plotly
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        x=co2_overtime.index,
+        y=co2_overtime.values,
+        name="Émissions CO₂"
+    ))
+
+    fig.update_layout(
+        title="Émissions de CO₂ (Tonnes CO₂ Eq.)",
+        xaxis_title="Temps",
+        yaxis_title="Tonnes CO₂ Eq",
+        template="simple_white",
+        hovermode="x unified",
+        height=500,
+        width=1200
+    )
+
+    return fig, co2_overtime.sum()
 
 def plot_marginal_prices(network):
     prices = network.buses_t.marginal_price
@@ -313,8 +372,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                cost_per_ton=150000.84,
                                efficiency=0.37,
                                ramp_limit_up=0.01,
-                               ramp_limit_down=0.01,
-                               marginal_cost=50),
+                               ramp_limit_down=0.01),
         "Oil": FuelSources(name="Oil",
                                co2_emissions=901e-3,
                                committable=True,
@@ -339,8 +397,9 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                energy_density_per_ton=0,
                                cost_per_ton=0,
                                efficiency=1,
-                               p_min_pu = PVprod["value"].reindex(snapshots, fill_value=0),
-                               p_max_pu = PVprod["value"].reindex(snapshots, fill_value=0)),
+                               # p_min_pu = PVprod["value"].reindex(snapshots, fill_value=0),
+                               p_max_pu = PVprod["value"].reindex(snapshots, fill_value=0),
+                               marginal_cost = 0.1),
         "Wind Onshore": FuelSources(name="Wind Onshore",
                                co2_emissions=13e-3,
                                committable=False,
@@ -349,8 +408,9 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                energy_density_per_ton=0,
                                cost_per_ton=0,
                                efficiency=1,
-                               p_min_pu = wind_on_shore["value"].reindex(snapshots, fill_value=0),
-                               p_max_pu = wind_on_shore["value"].reindex(snapshots, fill_value=0)),
+                               # p_min_pu = wind_on_shore["value"].reindex(snapshots, fill_value=0),
+                               p_max_pu = wind_on_shore["value"].reindex(snapshots, fill_value=0),
+                               marginal_cost = 0.2),
         "Wind Offshore": FuelSources(name="Wind Offshore",
                                co2_emissions=13e-3,
                                committable=False,
@@ -359,13 +419,14 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                energy_density_per_ton=0,
                                cost_per_ton=0,
                                efficiency=1,
-                               p_min_pu = wind_off_shore["value"].reindex(snapshots, fill_value=0),
-                               p_max_pu = wind_off_shore["value"].reindex(snapshots, fill_value=0)),
+                               # p_min_pu = wind_off_shore["value"].reindex(snapshots, fill_value=0),
+                               p_max_pu = wind_off_shore["value"].reindex(snapshots, fill_value=0),
+                               marginal_cost = 0.2),
         "Hydro - Run of River (Turbine)": FuelSources(name="Hydro - Run of River (Turbine)",
                                co2_emissions=0,
                                committable=True,
                                min_up_time=1,
-                               min_down_time=1,
+                               min_down_time=int(len(snapshots)*0.2),
                                energy_density_per_ton=0,
                                cost_per_ton=0,
                                efficiency=1),
@@ -390,6 +451,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
