@@ -236,10 +236,15 @@ def return_scenario(annee):
 
 def plot_evolstorage_plotly(network):
 
-    SOC = network.storage_units_t.state_of_charge
-    SOC['Hydro - pompage'] = SOC['Hydro - pompage']/network.storage_units.max_hours["Hydro - pompage"] * network.storage_units.p_nom["Hydro - pompage"]
-    SOC['Batteries']= SOC['Batteries']/network.storage_units.max_hours["Batteries"] * network.storage_units.p_nom["Batteries"]
-
+    SOC = network.storage_units_t.state_of_charge.copy() 
+    
+    max_e_hydro = network.storage_units.p_nom["Hydro - pompage"] * network.storage_units.max_hours["Hydro - pompage"]
+    max_e_bat = network.storage_units.p_nom["Batteries"] * network.storage_units.max_hours["Batteries"]
+    
+    if max_e_hydro > 0:
+        SOC['Hydro - pompage'] = (SOC['Hydro - pompage'] / max_e_hydro) * 100
+    if max_e_bat > 0:
+        SOC['Batteries'] = (SOC['Batteries'] / max_e_bat) * 100
     # Figure Plotly
     fig = go.Figure()
 
@@ -263,6 +268,7 @@ def plot_evolstorage_plotly(network):
     )
 
     return fig
+
 
 # Attention, pas de temps de 1h pour que les calculs soient valides
 #Calcul : émission co2 en tonnes/MWh * MWh produits par heure
@@ -445,6 +451,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
