@@ -11,9 +11,26 @@ import matplotlib.pyplot as plt
 import datetime
 from datetime import timedelta
 from main import *
-st.set_page_config(page_title="Simulation mix énergétique", layout="wide")
+st.set_page_config(page_title="Simulation mix électrique", layout="wide")
 
-st.title("⚡ Simulation de réseau énergétique - France")
+st.title("⚡ Simulation de réseau électrique - France")
+
+# st.markdown{"Bienvenue sur ce simulateur du réseau électrique français. Le programme va chercher à construire le mix électrique optimal pour la période souhaitée, en prenant en compte des contraintes économiques et écologiques pour répondre"}
+st.markdown("""### Introduction
+Ce document présente les résultats d’une simulation du réseau électrique français, visant à évaluer l’impact du stockage sur les émissions de CO₂.
+
+### Données initiales
+Les données proviennent d’ENTSO-E (ERAA 2024), [disponible ici](https://www.entsoe.eu/eraa/2024/downloads/), et incluent :
+- Les capacités de production et de stockage prévues pour 2025, 2028, 2030 et 2033.
+- La courbe de charge horaire de la France.
+- Les facteurs de capacité horaires du solaire, de l’éolien onshore et offshore.
+
+### PyPSA
+PyPSA (Python for Power System Analysis) est une librairie permettant la modélisation et l’optimisation de réseaux électriques, incluant générateurs pilotables et sources variables. Elle est adaptée aux simulations de grande échelle.  
+Documentation : https://docs.pypsa.org/latest/
+
+### Paramètres
+Plusieurs paramètres vous sont accessibles, notamment la quantité de stockage (batterie et hydraulique) présente sur le réseau. N'hésitez pas à expérimenter !""")
 
 st.sidebar.header("Paramètres de simulation")
 
@@ -51,15 +68,9 @@ capa_hyd = st.sidebar.number_input("Capacité hydro (MWh)", 0, 200000, 100000,50
 
 st.subheader("Aperçu du scénario choisi")
 
-# with st.spinner(f"Chargement du scénario {capa_data_year}..."):
-#     try:
-#         plot_scenarios(capa_data_year)
-#         st.pyplot(plt.gcf())
-#     except Exception as e:
-#         st.error(f"Impossible d'afficher l'aperçu du scénario {capa_data_year} : {e}")
 
 scenario = return_scenario(capa_data_year)
-st.subheader(f"Capacités installées - scénario {capa_data_year}")
+st.subheader(f"Capacités installées - scénario ERAA {capa_data_year}")
 st.dataframe(scenario.T)
 
 
@@ -103,7 +114,7 @@ if st.button("🚀 Lancer la simulation"):
         
         # --- Affichage des résultats ---
         if result[0] == 'ok':
-            st.subheader("Production horaire par source")
+            
             
             st.plotly_chart(plot_results_plotly(network))
     
@@ -111,10 +122,10 @@ if st.button("🚀 Lancer la simulation"):
             # plot_energybalance(network)
             # st.pyplot(plt.gcf())
     
-            st.subheader("Évolution du stockage")
+            
             st.plotly_chart(plot_evolstorage_plotly(network), use_container_width=True)
     
-            st.subheader("Émissions de CO₂")
+            
             fig, total_co2 = plot_co2overtime_plotly(network)
             st.plotly_chart(fig, use_container_width=True)
             st.metric(label="Émissions totales de CO₂", value=f"{total_co2:,.0f} tonnes eq.")
@@ -122,7 +133,7 @@ if st.button("🚀 Lancer la simulation"):
             st.error("Le solveur n'a pas trouvé de solution satisfaisante. Vous pouvez réduire la charge sur le réseau ou ajouter du stockage.", icon="🚨")
 
 else:
-    st.info("Choisis les paramètres et lance la simulation.")
+    st.info("Choisissez les paramètres et lancez la simulation.")
     
     
     
@@ -132,6 +143,7 @@ else:
 
 
 # bugs à régler : ne fonctionne pas quand on change l'année du scénario ...
+
 
 
 
