@@ -66,11 +66,8 @@ p_hyd = st.sidebar.number_input("Puissance hydro (MW)", 0, 4000, 3800,500)
 capa_hyd = st.sidebar.number_input("Capacité hydro (MWh)", 0, 200000, 100000,5000)
 
 
-st.subheader("Aperçu du scénario choisi")
-
-
 scenario = return_scenario(capa_data_year)
-st.subheader(f"Capacités installées - scénario ERAA {capa_data_year}")
+st.subheader(f"Aperçu du scénario choisi : ERAA {capa_data_year}")
 st.dataframe(scenario.T)
 
 
@@ -143,6 +140,7 @@ else:
 
 
 # bugs à régler : ne fonctionne pas quand on change l'année du scénario ...
+
 
 
 
