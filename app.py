@@ -13,6 +13,10 @@ from datetime import timedelta
 from main import *
 st.set_page_config(page_title="Simulation mix électrique", layout="wide")
 
+# Initialisation de l'historique
+if 'historique_simulations' not in st.session_state:
+    st.session_state.historique_simulations = []
+    
 st.title("⚡ Simulation de réseau électrique - France")
 
 # st.markdown{"Bienvenue sur ce simulateur du réseau électrique français. Le programme va chercher à construire le mix électrique optimal pour la période souhaitée, en prenant en compte des contraintes économiques et écologiques pour répondre"}
@@ -60,10 +64,11 @@ charge_initiale_stockage = st.sidebar.slider("Taux initial de charge du stockage
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Paramètres stockage")
-p_bat = st.sidebar.number_input("Puissance batteries (MW)", 0, 2000, 470,100)
-capa_bat = st.sidebar.number_input("Capacité batteries (MWh)", 0, 10000, 940,200)
-p_hyd = st.sidebar.number_input("Puissance hydro (MW)", 0, 4000, 3800,500)
-capa_hyd = st.sidebar.number_input("Capacité hydro (MWh)", 0, 200000, 100000,5000)
+p_bat = st.sidebar.slider("Puissance batteries (MW)", 1, 2000, 470, 100)
+capa_bat = st.sidebar.slider("Capacité batteries (MWh)", 1, 20000, 940, 200)
+p_hyd = st.sidebar.slider("Puissance hydro (MW)", 1, 4000, 3800, 500)
+capa_hyd = st.sidebar.slider("Capacité hydro (MWh)", 1, 200000, 100000, 5000)
+
 
 
 scenario = return_scenario(capa_data_year)
@@ -126,12 +131,60 @@ if st.button("🚀 Lancer la simulation"):
             fig, total_co2 = plot_co2overtime_plotly(network)
             st.plotly_chart(fig, use_container_width=True)
             st.metric(label="Émissions totales de CO₂", value=f"{total_co2:,.0f} tonnes eq.")
+        # --- ENREGISTREMENT DANS L'HISTORIQUE ---
+            # On crée un dictionnaire avec les paramètres d'entrée et les résultats clés
+            simulation_record = {
+                "ID": len(st.session_state.historique_simulations) + 1,
+                "Mois": widget_debut,
+                "Durée (j)": time_horizon_in_hours/24,
+                "Année Scénario": capa_data_year,
+                "Demande (x)": demand_multiplier,
+                "P Batt (MW)": p_bat,
+                "Capa Batt (MWh)": capa_bat,
+                "P Hydro (MW)": p_hyd,
+                "CO₂ Total (t)": round(total_co2, 2)
+            }
+            st.session_state.historique_simulations.append(simulation_record)
+            
+            # --- SECTION TELECHARGEMENT (PERSISTANCE LOCALE) ---
+            st.subheader("📥 Téléchargement des données")
+            
+            # Exemple : Téléchargement des séries temporelles des générateurs
+            # On suppose que network.generators_t.p contient la production
+            try:
+                df_export = network.generators_t.p.copy()
+                csv = df_export.to_csv(index=True).encode('utf-8')
+                
+                st.download_button(
+                    label="Télécharger les résultats (CSV)",
+                    data=csv,
+                    file_name=f'resultats_simulation_{datetime.datetime.now().strftime("%Y%m%d_%H%M")}.csv',
+                    mime='text/csv',
+                )
+            except Exception as e:
+                st.warning(f"Préparation du téléchargement impossible : {e}")
+
         else:
             st.error("Le solveur n'a pas trouvé de solution satisfaisante. Vous pouvez réduire la charge sur le réseau ou ajouter du stockage.", icon="🚨")
 
 else:
-    st.info("Choisissez les paramètres et lancez la simulation.")
+    st.info("Choisis les paramètres et lance la simulation.")
+
+if st.session_state.historique_simulations:
+    st.divider()
+    st.header("📚 Historique et comparaison des scénarios")
+    st.write("Ce tableau enregistre vos essais tant que la page reste ouverte.")
     
+    # Conversion en DataFrame pour affichage
+    df_hist = pd.DataFrame(st.session_state.historique_simulations)
+    st.dataframe(df_hist,width='stretch', hide_index=True)
+    
+    # Bouton pour effacer l'historique
+    if st.button("Effacer l'historique"):
+        st.session_state.historique_simulations = []
+        st.rerun() # Rafraîchit l'app pour mettre à jour l'affichage
+
+        
     
     
 #lancer streamlit : dans cmd !
@@ -140,6 +193,7 @@ else:
 
 
 # bugs à régler : ne fonctionne pas quand on change l'année du scénario ...
+
 
 
 
