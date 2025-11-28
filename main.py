@@ -277,7 +277,7 @@ def plot_co2overtime_plotly(network):
 
     # Calcul des émissions horaires
     co2_list = network.generators.carrier.map(network.carriers.co2_emissions)
-    co2_overtime = (network.generators_t.p * co2_list).sum(axis=1)
+    co2_overtime = ((network.generators_t.p*co2_list).sum(axis=1)/network.generators_t.p.sum(axis=1))*1000
 
     # Construction du bar chart Plotly
     fig = go.Figure()
@@ -289,9 +289,9 @@ def plot_co2overtime_plotly(network):
     ))
 
     fig.update_layout(
-        title="Émissions de CO₂ (Tonnes CO₂ Eq.)",
+        title="Emissions de C02 (gCo2 Eq./kWh)",
         xaxis_title="Temps",
-        yaxis_title="Tonnes CO₂ Eq",
+        yaxis_title="gCo2 Eq./kWh",
         template="simple_white",
         hovermode="x unified",
         height=500,
@@ -451,6 +451,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
