@@ -321,7 +321,7 @@ def plot_co2overtime_plotly(network):
         width=1200
     )
 
-    return fig, co2_overtime.sum()
+    return fig, (network.generators_t.p*co2_list).sum(axis=1).sum()
 
 def plot_marginal_prices(network):
     prices = network.buses_t.marginal_price
@@ -474,6 +474,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
