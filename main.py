@@ -278,7 +278,7 @@ def plot_comparatifco2energy(network):
 
     fig = px.bar(
         comparatif_plot,
-        x="name",
+        x="Generator",
         y=["emissions", "production"],
         barmode="group",
         title="Ration des émissions CO₂ et production par source d'énergie",
@@ -474,6 +474,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
