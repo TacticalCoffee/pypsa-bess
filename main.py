@@ -446,7 +446,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                p_max_pu = wind_off_shore["value"].reindex(snapshots, fill_value=0),
                                marginal_cost = 0.2),
         "Hydro - Run of River (Turbine)": FuelSources(name="Hydro - Run of River (Turbine)",
-                               co2_emissions=0,
+                               co2_emissions=11e-3,
                                committable=True,
                                min_up_time=1,
                                min_down_time=int(len(snapshots)*0.2),
@@ -474,6 +474,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
