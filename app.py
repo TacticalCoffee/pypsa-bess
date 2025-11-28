@@ -125,11 +125,11 @@ if st.button("🚀 Lancer la simulation"):
             # st.pyplot(plt.gcf())
     
             
-            st.plotly_chart(plot_evolstorage_plotly(network), use_container_width=True)
-    
+            st.plotly_chart(plot_evolstorage_plotly(network), width='stretch')
+             st.plotly_chart(plot_comparatifco2energy(network),width='stretch')
             
             fig, total_co2 = plot_co2overtime_plotly(network)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             st.metric(label="Émissions totales de CO₂", value=f"{total_co2:,.0f} tonnes eq.")
         # --- ENREGISTREMENT DANS L'HISTORIQUE ---
             # On crée un dictionnaire avec les paramètres d'entrée et les résultats clés
@@ -193,6 +193,7 @@ if st.session_state.historique_simulations:
 
 
 # bugs à régler : ne fonctionne pas quand on change l'année du scénario ...
+
 
 
 
