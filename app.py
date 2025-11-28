@@ -125,8 +125,9 @@ if st.button("🚀 Lancer la simulation"):
             # st.pyplot(plt.gcf())
     
             
-             st.plotly_chart(plot_evolstorage_plotly(network), width='stretch')
-             st.plotly_chart(plot_comparatifco2energy(network),width='stretch')
+            st.plotly_chart(plot_evolstorage_plotly(network), width='stretch')
+            
+            st.plotly_chart(plot_comparatifco2energy(network),width='stretch')
             
             fig, total_co2 = plot_co2overtime_plotly(network)
             st.plotly_chart(fig, width='stretch')
@@ -193,6 +194,7 @@ if st.session_state.historique_simulations:
 
 
 # bugs à régler : ne fonctionne pas quand on change l'année du scénario ...
+
 
 
 
