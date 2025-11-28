@@ -268,7 +268,30 @@ def plot_evolstorage_plotly(network):
     )
 
     return fig
+def plot_comparatifco2energy(network):
+    co2_list = network.generators.carrier.map(network.carriers.co2_emissions)
+    comparatif = pd.DataFrame({
+    "emissions": network.generators_t.p.sum()*co2_list/(network.generators_t.p.sum()*co2_list).sum(),
+    'production': network.generators_t.p.sum()/network.generators_t.p.sum().sum()
+    })
+    comparatif_plot = comparatif.reset_index().rename(columns={"index": "energie"})
 
+    fig = px.bar(
+        comparatif_plot,
+        x="name",
+        y=["emissions", "production"],
+        barmode="group",
+        title="Ration des émissions CO₂ et production par source d'énergie",
+        labels={
+            "value": "Valeur",
+            "variable": "Indicateur",
+            "energie": "Source d'énergie"},
+    color_discrete_map={
+        "emissions": "crimson",    # couleur du groupe emissions
+        "production": "steelblue"  # couleur du groupe production
+    })
+    
+    return fig
 
 # Attention, pas de temps de 1h pour que les calculs soient valides
 #Calcul : émission co2 en tonnes/MWh * MWh produits par heure
@@ -451,6 +474,7 @@ def prep_generators(climatic_data_year,clim_year,snapshots):
                                marginal_cost=250),
     }
     return fuel_sources
+
 
 
 
